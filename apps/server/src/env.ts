@@ -14,6 +14,9 @@ export const env = z
     S3_REGION: z.string().min(1),
     S3_BUCKET: z.string().min(1),
     S3_ACCESS_KEY_ID: z.string().min(1),
-    S3_SECRET_ACCESS_KEY: z.string().min(1)
+    S3_SECRET_ACCESS_KEY: z.string().min(1),
+
+    MEDIASOUP_LISTEN_IP: z.string().min(1),
+    MEDIASOUP_ANNOUNCED_IP: z.string().min(1)
   })
   .parse(process.env);
