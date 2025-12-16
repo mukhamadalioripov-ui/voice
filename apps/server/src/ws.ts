@@ -32,12 +32,8 @@ export function attachSocketIO(httpServer: HttpServer) {
       const content = String(payload?.content ?? "").trim();
       const attachments = Array.isArray(payload?.attachments) ? payload.attachments : [];
 
-      if (!content && attachments.length === 0) {
-        return cb?.({ ok: false, error: "EMPTY" });
-      }
-      if (content.length > 2000) {
-        return cb?.({ ok: false, error: "TOO_LONG" });
-      }
+      if (!content && attachments.length === 0) return cb?.({ ok: false, error: "EMPTY" });
+      if (content.length > 2000) return cb?.({ ok: false, error: "TOO_LONG" });
 
       const msg = await prisma.message.create({
         data: {
@@ -46,10 +42,10 @@ export function attachSocketIO(httpServer: HttpServer) {
           attachments: {
             create: attachments.map((a: any) => ({
               key: String(a.key),
-              url: String(a.url),
               filename: String(a.filename),
               mime: String(a.mime),
-              size: Number(a.size)
+              size: Number(a.size),
+              url: "" // deprecated, will remove after front is updated (kept for now to avoid another migration)
             }))
           }
         },
@@ -60,9 +56,7 @@ export function attachSocketIO(httpServer: HttpServer) {
       cb?.({ ok: true, message: msg });
     });
 
-    socket.on("disconnect", () => {
-      stateBySocket.delete(socket.id);
-    });
+    socket.on("disconnect", () => stateBySocket.delete(socket.id));
   });
 
   return io;
