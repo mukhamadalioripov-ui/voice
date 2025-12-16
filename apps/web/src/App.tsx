@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { socket } from "./socket";
 import { createSession, getAttachmentUrl, loadMessages, uploadFile } from "./api";
 import type { Message, User } from "./types";
+import { voiceJoin, voiceLeave, type VoiceState } from "./voice";
+const [voice, setVoice] = useState<VoiceState>({ joined: false, peers: [] });
 
 type PendingAttachment = {
   key: string;
@@ -189,14 +191,33 @@ export default function App() {
             {error && <div className="error">{error}</div>}
           </section>
 
-          <section className="voice">
-            <div className="voiceBox">
-              <div className="voiceTitle">Voice (в следующем пакете)</div>
-              <div className="voiceHint">
-                Для голоса через WebRTC нужен secure context (HTTPS), поэтому TLS уже включён.
-              </div>
-            </div>
-          </section>
+         <section className="voice">
+  <div className="voiceBox">
+    <div className="voiceTitle">Voice</div>
+
+    {!voice.joined ? (
+      <button
+        type="button"
+        onClick={() =>
+          voiceJoin((p) => setVoice((v) => ({ ...v, ...p }))).catch(() =>
+            setError("Не удалось подключиться к голосу")
+          )
+        }
+      >
+        Join voice
+      </button>
+    ) : (
+      <button type="button" onClick={() => voiceLeave((p) => setVoice((v) => ({ ...v, ...p })))}>
+        Leave voice
+      </button>
+    )}
+
+    <div className="voiceHint">
+      Если браузер не даёт звук — проверь разрешение на микрофон и что страница открыта по HTTPS.
+    </div>
+  </div>
+</section>
+
         </div>
       )}
     </div>
