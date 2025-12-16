@@ -16,8 +16,10 @@ services:
       NODE_ENV: production
       PORT: 3000
 
-      # Used by frontend to call API and by backend to build file URLs (if needed)
       PUBLIC_BASE_URL: "https://${PUBLIC_IP}"
+
+      # Postgres (Prisma)
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public"
 
       # S3 (MinIO)
       S3_ENDPOINT: "http://minio:9000"
@@ -34,11 +36,22 @@ services:
     ports:
       - "40000-40100:40000-40100/udp"
     depends_on:
+      - postgres
       - minio
     restart: unless-stopped
 
   web:
     build: ./apps/web
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
     restart: unless-stopped
 
   minio:
@@ -56,4 +69,5 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+  pg_data:
   minio_data:
